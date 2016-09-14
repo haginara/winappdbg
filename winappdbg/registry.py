@@ -1,7 +1,7 @@
 #!/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2009-2015, Mario Vilas
+# Copyright (c) 2009-2016, Mario Vilas
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -280,12 +280,16 @@ class RegistryKey (_RegistryContainer):
             win32.RegDeleteValue(handle, resp[0])
 
     def __str__(self):
-        default = self['']
-        return str(default)
+        try:
+            return str(self[''])
+        except KeyError:
+            return ''
 
     def __unicode__(self):
-        default = self[u'']
-        return unicode(default)
+        try:
+            return str(self[u''])
+        except KeyError:
+            return u''
 
     def __repr__(self):
         return '<Registry key: "%s">' % self._path

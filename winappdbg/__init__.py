@@ -1,7 +1,7 @@
 #!/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2009-2015, Mario Vilas
+# Copyright (c) 2009-2016, Mario Vilas
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -249,7 +249,12 @@ import win32
 from win32 import Handle, ProcessHandle, ThreadHandle, FileHandle
 
 try:
-    from sql import *
+    # We need to ignore all warnings from this module because SQLAlchemy
+    # became really picky in its latest versions regarding what we send it.
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        from sql import *
     __all__.append('CrashDAO')
 except ImportError:
     import warnings
@@ -257,5 +262,5 @@ except ImportError:
                   ImportWarning)
 
 # Library version
-version_number = 1.5
+version_number = 1.6
 version = "Version %s" % version_number

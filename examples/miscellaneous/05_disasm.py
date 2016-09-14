@@ -1,7 +1,7 @@
 #!/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2009-2015, Mario Vilas
+# Copyright (c) 2009-2016, Mario Vilas
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -43,10 +43,12 @@ if len( argv ) == 1:
     print
     print "Supported disassembler engines:"
     print "-------------------------------"
-    for engine in Disassembler.engines:
+    available = Disassembler.get_available_engines()
+    for engine in Disassembler.get_all_engines():
         print
         print "Name: %s" % engine.name
         print "Description: %s" % engine.desc
+        print "Available: %s" % ("YES" if engine in available else "NO")
         print "Supported architectures: %s" % ", ".join( engine.supported )
 
 # If there are command line arguments...

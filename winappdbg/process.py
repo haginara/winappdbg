@@ -1,7 +1,7 @@
 #!/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2009-2015, Mario Vilas
+# Copyright (c) 2009-2016, Mario Vilas
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -4942,7 +4942,7 @@ class _ProcessContainer (object):
             aProcess = None
             msg = "Unknown process ID %d" % dwProcessId
             warnings.warn(msg, RuntimeWarning)
-        if aProcess:
+        if aProcess is not None:
             aProcess.clear()    # remove circular references
 
     # Notify the creation of a new process.

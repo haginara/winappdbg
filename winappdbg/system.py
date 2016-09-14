@@ -1,7 +1,7 @@
 #!/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2009-2015, Mario Vilas
+# Copyright (c) 2009-2016, Mario Vilas
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -48,6 +48,7 @@ from window import Window
 
 import os
 import sys
+import glob
 import ctypes
 import ntpath
 import warnings
@@ -72,7 +73,7 @@ class System (_ProcessContainer):
 
     @group Instrumentation:
         find_window, get_window_at, get_foreground_window,
-        get_desktop_window, get_shell_window
+        get_desktop_window, get_shell_window, get_top_level_windows
 
     @group Debugging:
         load_dbghelp, fix_symbol_store_path,
@@ -212,6 +213,15 @@ class System (_ProcessContainer):
         @raise WindowsError: An error occured while processing this request.
         """
         return Window( win32.GetShellWindow() )
+
+    @staticmethod
+    def get_top_level_windows():
+        """
+        @rtype:  L{Window}
+        @return: Returns the top-level windows in the current desktop.
+        @raise WindowsError: An error occured while processing this request.
+        """
+        return [ Window( hWnd ) for hWnd in win32.EnumWindows() ]
 
 #------------------------------------------------------------------------------
 
@@ -491,27 +501,11 @@ class System (_ProcessContainer):
         # Intel 64 bits.
         win32.ARCH_AMD64: set([
 
-            # WinDbg bundled with the SDK, version 8.1.
+            # WinDbg bundled with the SDK.
             ntpath.join(
                 getenv("ProgramFiles", "C:\\Program Files"),
                 "Windows Kits",
-                "8.1",
-                "Debuggers",
-                "x64",
-                "dbghelp.dll"),
-            ntpath.join(
-                getenv("ProgramFiles(x86)", "C:\\Program Files (x86)"),
-                "Windows Kits",
-                "8.1",
-                "Debuggers",
-                "x64",
-                "dbghelp.dll"),
-
-            # WinDbg bundled with the SDK, version 8.0.
-            ntpath.join(
-                getenv("ProgramFiles", "C:\\Program Files"),
-                "Windows Kits",
-                "8.0",
+                "*",
                 "Debuggers",
                 "x64",
                 "dbghelp.dll"),
@@ -533,28 +527,11 @@ class System (_ProcessContainer):
         # Intel 32 bits.
         win32.ARCH_I386 : set([
 
-            # WinDbg bundled with the SDK, version 8.1.
+            # WinDbg bundled with the SDK.
             ntpath.join(
                 getenv("ProgramFiles", "C:\\Program Files"),
                 "Windows Kits",
-                "8.1",
-                "Debuggers",
-                "x86",
-                "dbghelp.dll"),
-            ntpath.join(
-                getenv("ProgramW6432",
-                       getenv("ProgramFiles", "C:\\Program Files")),
-                "Windows Kits",
-                "8.1",
-                "Debuggers",
-                "x86",
-                "dbghelp.dll"),
-
-            # WinDbg bundled with the SDK, version 8.0.
-            ntpath.join(
-                getenv("ProgramFiles", "C:\\Program Files"),
-                "Windows Kits",
-                "8.0",
+                "*",
                 "Debuggers",
                 "x86",
                 "dbghelp.dll"),
@@ -645,8 +622,16 @@ class System (_ProcessContainer):
                 raise NotImplementedError(msg  % arch)
 
             # Grab all versions of the library we can find.
-            found = []
+            # Since some of the possible paths are dependent on the exact
+            # version of the Windows SDK, we use wildcards instead.
+            possible = []
             for pathname in cls.__dbghelp_locations[arch]:
+                if "*" in pathname:
+                    possible.extend(glob.glob(pathname))
+                else:
+                    possible.append(pathname)
+            found = []
+            for pathname in possible:
                 if ntpath.isfile(pathname):
                     try:
                         f_ver, p_ver = cls.get_file_version_info(pathname)[:2]

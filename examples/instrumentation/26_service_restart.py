@@ -1,7 +1,7 @@
 #!/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2009-2015, Mario Vilas
+# Copyright (c) 2009-2016, Mario Vilas
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -75,7 +75,10 @@ def restart_service( service ):
 
     # On error, show an error message.
     except WindowsError, e:
-        print str(e)
+        if e.winerror == win32.ERROR_ACCESS_DENIED:
+            print "Access denied! Is this an UAC elevated prompt?"
+        else:
+            print str(e)
 
 
 # Helper function to wait for the service to change its state.

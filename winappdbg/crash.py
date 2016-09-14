@@ -1,7 +1,7 @@
 #!/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2009-2015, Mario Vilas
+# Copyright (c) 2009-2016, Mario Vilas
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -1537,9 +1537,17 @@ class CrashDictionary(object):
             If C{False} any L{Crash} object with the same signature as a
             previously existing object will be ignored.
         """
+
+        # Lazy import of the winappdbg.sql submodule.
+        # We need to ignore all warnings from this module because SQLAlchemy
+        # became really picky in its latest versions regarding what we send it.
         global sql
         if sql is None:
-            import sql
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                import sql
+
+        # Initialize the private members of the class.
         self._allowRepeatedKeys = allowRepeatedKeys
         self._dao = sql.CrashDAO(url, creator)
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2009-2015, Mario Vilas
+# Copyright (c) 2009-2016, Mario Vilas
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,12 @@ Common definitions.
 import ctypes
 import functools
 
+#==============================================================================
+# This is used later on to calculate the list of exported symbols.
+_all = None
+_all = set(vars().keys())
+#==============================================================================
+
 # Cygwin compatibility.
 try:
     WindowsError
@@ -68,11 +74,13 @@ POINTER     = ctypes.POINTER
 WINFUNCTYPE = ctypes.WINFUNCTYPE
 windll      = ctypes.windll
 
+# Automatically disable padding of structs and unions on 32 bits.
 class Structure(ctypes.Structure):
-    _pack_ = 1
-
+    if sizeof(ctypes.c_void_p) == 4:
+        _pack_ = 1
 class Union(ctypes.Union):
-    _pack_ = 1
+    if sizeof(ctypes.c_void_p) == 4:
+        _pack_ = 1
 
 # The IronPython implementation of byref() was giving some problems,
 # so it's best to replace it with the slower pointer() function.
@@ -135,11 +143,7 @@ if WIN32_VERBOSE_MODE:
 
     windll = WinDllHook()
 
-#==============================================================================
-# This is used later on to calculate the list of exported symbols.
-_all = None
-_all = set(vars().keys())
-#==============================================================================
+#------------------------------------------------------------------------------
 
 def RaiseIfZero(result, func = None, arguments = ()):
     """
