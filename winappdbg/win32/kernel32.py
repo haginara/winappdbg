@@ -3379,12 +3379,12 @@ def WaitForMultipleObjects(handles, bWaitAll = False, dwMilliseconds = INFINITE)
     lpHandlesType   = HANDLE * nCount
     lpHandles       = lpHandlesType(*handles)
     if dwMilliseconds != INFINITE:
-        r = _WaitForMultipleObjects(byref(lpHandles), bool(bWaitAll), dwMilliseconds)
+        r = _WaitForMultipleObjects(nCount, byref(lpHandles), bool(bWaitAll), dwMilliseconds)
         if r == WAIT_FAILED:
             raise ctypes.WinError()
     else:
         while 1:
-            r = _WaitForMultipleObjects(byref(lpHandles), bool(bWaitAll), 100)
+            r = _WaitForMultipleObjects(nCount, byref(lpHandles), bool(bWaitAll), 100)
             if r == WAIT_FAILED:
                 raise ctypes.WinError()
             if r != WAIT_TIMEOUT:
@@ -3409,12 +3409,12 @@ def WaitForMultipleObjectsEx(handles, bWaitAll = False, dwMilliseconds = INFINIT
     lpHandlesType   = HANDLE * nCount
     lpHandles       = lpHandlesType(*handles)
     if dwMilliseconds != INFINITE:
-        r = _WaitForMultipleObjectsEx(byref(lpHandles), bool(bWaitAll), dwMilliseconds, bool(bAlertable))
+        r = _WaitForMultipleObjectsEx(nCount, byref(lpHandles), bool(bWaitAll), dwMilliseconds, bool(bAlertable))
         if r == WAIT_FAILED:
             raise ctypes.WinError()
     else:
         while 1:
-            r = _WaitForMultipleObjectsEx(byref(lpHandles), bool(bWaitAll), 100, bool(bAlertable))
+            r = _WaitForMultipleObjectsEx(nCount, byref(lpHandles), bool(bWaitAll), 100, bool(bAlertable))
             if r == WAIT_FAILED:
                 raise ctypes.WinError()
             if r != WAIT_TIMEOUT:
@@ -3854,7 +3854,7 @@ def CreateProcessA(lpApplicationName, lpCommandLine=None, lpProcessAttributes=No
     if not lpCommandLine:
         lpCommandLine       = None
     else:
-        lpCommandLine       = ctypes.create_string_buffer(lpCommandLine, max(MAX_PATH, len(lpCommandLine)))
+        lpCommandLine       = ctypes.create_string_buffer(lpCommandLine, max(MAX_PATH, len(lpCommandLine) + 1))
     if not lpEnvironment:
         lpEnvironment       = None
     else:
@@ -3897,7 +3897,7 @@ def CreateProcessW(lpApplicationName, lpCommandLine=None, lpProcessAttributes=No
     if not lpCommandLine:
         lpCommandLine       = None
     else:
-        lpCommandLine       = ctypes.create_unicode_buffer(lpCommandLine, max(MAX_PATH, len(lpCommandLine)))
+        lpCommandLine       = ctypes.create_unicode_buffer(lpCommandLine, max(MAX_PATH, len(lpCommandLine) + 1))
     if not lpEnvironment:
         lpEnvironment       = None
     else:
@@ -4111,7 +4111,7 @@ def GetProcessIdOfThread(hThread):
 # );
 def GetExitCodeProcess(hProcess):
     _GetExitCodeProcess = windll.kernel32.GetExitCodeProcess
-    _GetExitCodeProcess.argtypes = [HANDLE]
+    _GetExitCodeProcess.argtypes = [HANDLE, PDWORD]
     _GetExitCodeProcess.restype  = bool
     _GetExitCodeProcess.errcheck = RaiseIfZero
 
@@ -4125,7 +4125,7 @@ def GetExitCodeProcess(hProcess):
 # );
 def GetExitCodeThread(hThread):
     _GetExitCodeThread = windll.kernel32.GetExitCodeThread
-    _GetExitCodeThread.argtypes = [HANDLE]
+    _GetExitCodeThread.argtypes = [HANDLE, PDWORD]
     _GetExitCodeThread.restype  = bool
     _GetExitCodeThread.errcheck = RaiseIfZero
 
